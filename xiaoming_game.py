@@ -1,140 +1,127 @@
 import streamlit as st
 from collections import Counter
 
-# 1. 網頁基本設定
-st.set_page_config(page_title="小明的五味靈魂探險", page_icon="🎨", layout="centered")
+# 1. 頁面設定
+st.set_page_config(page_title="小明的五味冒險", page_icon="🍱", layout="centered")
 
-# 2. 華麗視覺樣式 (CSS)
+# 2. 注入華麗卡通風格 CSS
 st.markdown("""
-    <style>
-    .stApp {
-        background: linear-gradient(135deg, #fdfcf0 0%, #fff9e6 100%);
+<style>
+    .stApp { background-color: #FDFCF0; }
+    .chat-card {
+        background: white; border: 4px solid #333; border-radius: 20px;
+        padding: 25px; box-shadow: 8px 8px 0px #FFAA00; margin-bottom: 20px;
     }
-    .scenario-container {
-        background: white;
-        padding: 30px;
-        border-radius: 30px;
-        border: 4px solid #ffcc00;
-        box-shadow: 10px 10px 0px #ffaa00;
-        margin-bottom: 25px;
+    .char-label {
+        background: #333; color: #FFD700; padding: 5px 15px;
+        border-radius: 10px; font-weight: bold; display: inline-block; margin-bottom: 10px;
     }
-    .character-bubble {
-        background: #f0f0f0;
-        border: 2px solid #333;
-        padding: 15px;
-        border-radius: 15px;
-        font-weight: bold;
-        color: #333;
-    }
+    .bubble { font-size: 20px; font-weight: 800; color: #444; line-height: 1.5; }
     .stButton>button {
-        background: white;
-        color: #ff8800;
-        border: 3px solid #ff8800;
-        border-radius: 50px;
-        font-size: 18px;
-        font-weight: bold;
-        box-shadow: 0 5px 0 #ff8800;
-        transition: 0.3s;
+        width: 100%; background-color: white; color: #FF8800 !important;
+        border: 3px solid #FF8800 !important; border-radius: 50px !important;
+        padding: 12px !important; font-size: 18px !important; font-weight: bold !important;
+        box-shadow: 0 6px 0 #FF8800 !important; transition: 0.2s;
     }
     .stButton>button:hover {
-        transform: translateY(-3px);
-        background: #ff8800;
-        color: white;
+        transform: translateY(-3px); background-color: #FF8800 !important;
+        color: white !important; box-shadow: 0 9px 0 #CC6600 !important;
     }
-    .result-card {
-        background: white;
-        border: 5px solid #ffaa00;
-        padding: 30px;
-        border-radius: 30px;
-        text-align: center;
+    .result-box {
+        background: #FFF; border: 6px solid #FF8800; border-radius: 30px;
+        padding: 40px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    </style>
-    """, unsafe_allow_html=True)
+</style>
+""", unsafe_allow_html=True)
 
-# 3. 初始化狀態
+# 3. 初始化數據
 if 'step' not in st.session_state:
     st.session_state.step = 0
+if 'answers' not in st.session_state:
     st.session_state.answers = []
 
-# 4. 題目資料
+# 4. 場景與題目
 questions = [
     {
-        "icon": "🏫", "scene_name": "校園出口", 
-        "scene": "期中考終於結束了，夕陽照在校門口，小明伸了一個大懶腰！",
-        "dialogue": "「終於考完了！我現在大腦需要重口味的補充，走吧！」",
-        "options": [("A. 泰式檸檬魚配酸辣粉", "A"), ("B. 特濃苦甜巧克力舒芙蕾", "B"), ("C. 蜂蜜奶油厚鬆餅", "C"), ("D. 地獄麻辣火鍋", "D"), ("E. 雙倍鹽度日式拉麵", "E")]
+        "icon": "🎒", "place": "校園門口", "story": "期中考結束了！夕陽下的小明感覺大腦電力剩 1%...",
+        "say": "「呼...腦袋徹底當機！現在我需要超重口味的食物來重啟靈魂，走吧！」",
+        "opts": [("A. 泰式酸辣魚粉 (酸爽帶勁)", "A"), ("B. 苦甜黑巧舒芙蕾 (大人滋味)", "B"), ("C. 蜂蜜奶油厚鬆餅 (甜蜜爆發)", "C"), ("D. 地獄麻辣大火鍋 (辛辣發散)", "D"), ("E. 雙倍濃鹽濃湯拉麵 (鹹鮮入味)", "E")]
     },
     {
-        "icon": "🏮", "scene_name": "東京巷弄", 
-        "scene": "小明跟女朋友在旅行，走進一家掛滿紅燈籠的神祕居酒屋。",
-        "dialogue": "「這裡氣氛真好！我們點這道招牌料理來試試看吧？」",
-        "options": [("A. 醋漬青梅涼菜", "A"), ("B. 鹽烤焦香銀杏", "B"), ("C. 甜醬燉黑毛和牛", "C"), ("D. 七味粉辣雞串燒", "D"), ("E. 醬油醃漬生魚卵", "E")]
+        "icon": "🏮", "place": "東京・居酒屋", "story": "小明帶女朋友旅遊，走進掛滿紅燈籠的巷弄神祕小店。",
+        "say": "「親愛的，聽說這家的『味覺覺醒』料理超有名，我們試試這道？」",
+        "opts": [("A. 極致醃漬青梅", "A"), ("B. 炭火焦香銀杏", "B"), ("C. 甜醬嫩燉和牛", "C"), ("D. 哇沙米激辣雞串", "D"), ("E. 熟成醬油醃魚卵", "E")]
     },
     {
-        "icon": "🍲", "scene_name": "老家廚房", 
-        "scene": "一回到家，廚房就傳來陣陣香味，是媽媽正在準備晚餐。",
-        "dialogue": "「媽！好香喔！今天的主菜是我最喜歡的那道嗎？」",
-        "options": [("A. 秘製糖醋排骨", "A"), ("B. 降火苦瓜排骨湯", "B"), ("C. 山藥地瓜甜湯", "C"), ("D. 爆蔥乾煸牛肉", "D"), ("E. 紅燒鹹香獅子頭", "E")]
+        "icon": "🏠", "place": "溫馨老家", "story": "推開門，廚房傳來熟悉的鍋鏟聲，媽媽正在準備晚餐。",
+        "say": "「哇！這香味...媽！你是不是做了我夢寐以求的那道菜？」",
+        "opts": [("A. 秘製祖傳糖醋肉", "A"), ("B. 降火微苦排骨湯", "B"), ("C. 補氣山藥地瓜甜湯", "C"), ("D. 辛香爆蔥快炒肉", "D"), ("E. 鹹鮮入味紅燒肉", "E")]
     },
     {
-        "icon": "🎉", "scene_name": "慶生派對", 
-        "scene": "KTV包廂裡燈光閃爍，輪到小明決定要訂哪種口味的蛋糕。",
-        "dialogue": "「既然是慶祝，口味絕對要挑最令人難忘的那種！」",
-        "options": [("A. 極致檸檬塔", "A"), ("B. 深焙咖啡慕斯", "B"), ("C. 經典布丁大蛋糕", "C"), ("D. 薑汁肉桂香料蛋糕", "D"), ("E. 海鹽焦糖起司蛋糕", "E")]
+        "icon": "🎂", "place": "驚喜派對", "story": "派對現場氣氛嗨爆！小明拿著蛋糕目錄，準備點壓軸點心。",
+        "say": "「今天的聚會，一定要選一個讓大家舌尖都跳舞的口味！」",
+        "opts": [("A. 爆漿酸檸檬塔", "A"), ("B. 炭焙苦咖啡蛋糕", "B"), ("C. 傳統古法大布丁", "C"), ("D. 肉桂生薑香料糕", "D"), ("E. 海鹽焦糖起司糕", "E")]
     },
     {
-        "icon": "🎬", "scene_name": "深夜沙發", 
-        "scene": "半夜追劇正精彩，小明的肚子卻不爭氣地大聲抗議了。",
-        "dialogue": "「可惡...這時候如果不來點靈魂零食，根本看不下去！」",
-        "options": [("A. 檸檬蜜餞", "A"), ("B. 厚抹抹茶飲", "B"), ("C. 牛奶糖/龍鬚糖", "C"), ("D. 哇沙米脆餅", "D"), ("E. 煙燻辣味牛肉乾", "E")]
+        "icon": "🎬", "place": "深夜沙發", "story": "半夜兩點，小明正看到精彩結局...肚子卻咕嚕叫了！",
+        "say": "「可惡，如果不來點靈魂零食，我真的沒法專心看劇情！」",
+        "opts": [("A. 瞇眼超級酸蜜餞", "A"), ("B. 濃郁厚抹茶苦飲", "B"), ("C. 軟Q牛奶大糖球", "C"), ("D. 嗆鼻哇沙米脆餅", "D"), ("E. 厚切煙燻牛肉乾", "E")]
     }
 ]
 
-# 5. 遊戲邏輯與畫面顯示
+# 5. 遊戲介面
 if st.session_state.step < len(questions):
-    curr = questions[st.session_state.step]
-    st.markdown(f"<h1 style='text-align: center; color: #ff8800;'>{curr['icon']} 小明的日常探險</h1>", unsafe_allow_html=True)
+    q = questions[st.session_state.step]
+    st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的日常探險</h1>", unsafe_allow_html=True)
     st.progress((st.session_state.step) / len(questions))
     
     st.markdown(f"""
-    <div class="scenario-container">
-        <b style='color: #ffaa00;'>📍 {curr['scene_name']}</b>
-        <p style='color: #666; font-style: italic;'>{curr['scene']}</p>
-        <div class="character-bubble">小明：「{curr['dialogue']}」</div>
+    <div class="chat-card">
+        <div class="char-label">📍 {q['place']}</div>
+        <p style='color: #888; font-style: italic;'>{q['story']}</p>
+        <hr>
+        <div class="bubble">小明：「{q['say']}」</div>
     </div>
     """, unsafe_allow_html=True)
     
-    for text, code in curr['options']:
-        if st.button(text, key=f"btn_{st.session_state.step}_{code}"):
+    # 建立選項按鈕
+    for btn_text, code in q['opts']:
+        if st.button(btn_text, key=f"btn_{st.session_state.step}_{code}"):
             st.session_state.answers.append(code)
             st.session_state.step += 1
             st.rerun()
 
 else:
-    # 6. 計算與結果顯示
+    # 6. 結果計算與顯示
     st.balloons()
-    st.markdown("<h1 style='text-align: center; color: #ff8800;'>🔮 探險終點：你的靈魂味覺</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #FF8800;'>🔮 探險終點：你的靈魂味覺</h1>", unsafe_allow_html=True)
     
-    # 防止空名單報錯
+    # 使用 Counter 計算最高頻率的選項
     if st.session_state.answers:
-        final_answer = Counter(st.session_state.answers).most_common(1)
+        counts = Counter(st.session_state.answers)
+        final_key = counts.most_common(1) # 取得 A, B, C, D 或 E 
     else:
-        final_answer = "C"
+        final_key = "C"
 
-    results = {
-        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "在小明的冒險中，你總是選擇清爽收斂。在生活中，你是個精明且追求效率的人，做事乾脆，但也可能代表你目前的狀態比較緊繃。"},
-        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "你選擇了沉穩的苦味。這代表你擁有超越年齡的成熟心智，生活中你是個可靠的避風港。"},
-        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求甜蜜與穩定。在生活中，你性格溫和、熱愛和平，但有時會因為太愛安逸而忘了前進。"},
-        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡熱情奔放的快感！生活中你直來直往、熱愛挑戰，是朋友圈中的點火器。"},
-        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "你偏好厚實且入味的層次感。生活中你行事踏實，是腳踏實地的實踐家。"}
+    # 結果資料庫 (Key 必須是字串 'A', 'B'...)
+    results_map = {
+        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "在小明的冒險中，你總是選擇清爽收斂。生活中你是個精明且追求效率的人，做事乾脆，但也代表你目前的狀態比較緊繃。"},
+        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "你選擇了沉穩的苦味。這代表你擁有超越年齡的成熟感，在朋友圈中是個可靠的守護者，默默承擔著責任。"},
+        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求甜蜜與穩定。性格溫和、熱愛和平，是大家眼中的開心果，但有時會因為太愛安逸而忘了前進。"},
+        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡熱情奔放的挑戰！直來直往、有正義感，是行動派的代表，但也容易因為衝動而耗損元氣。"},
+        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "你偏好厚實且紮實的層次感。行事踏實、注重細節，是腳踏實地的實踐家，要注意適度放鬆。"}
     }
     
-    res = results[final_answer]
+    # 這裡確保 final_key 是一個字串，就不會報 TypeError 了
+    res = results_map.get(final_key, results_map["C"])
+    
     st.markdown(f"""
-    <div class="result-card">
-        <h2 style='color: #ff8800;'>{res['title']}</h2>
+    <div class="result-box">
+        <h2 style='color: #FF8800;'>{res['title']}</h2>
         <hr>
-        <p style='font-size: 20px; line-height: 1.6; color: #444;'><b>生活樣貌：</b><br>{res['desc']}</p>
+        <p style='font-size: 22px; line-height: 1.8; color: #333;'>
+            <b>【生活樣貌】</b><br>{res['desc']}
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
