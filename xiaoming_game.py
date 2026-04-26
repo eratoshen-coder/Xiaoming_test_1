@@ -1,23 +1,19 @@
 import streamlit as st
 
-# 1. 頁面設定 (使用 wide 模式讓圖片有發揮空間)
+# 1. 頁面設定 (Wide 模式讓大圖更好看)
 st.set_page_config(page_title="小明的五味靈魂探險", page_icon="🍱", layout="wide")
 
-# 2. 注入華麗動漫風格 CSS
+# 2. 注入動漫風格 CSS
 st.markdown("""
 <style>
     .stApp { background-color: #FDFCF0; }
-    
-    /* 圖片外框：日系手繪感 */
     .img-container {
         border: 4px solid #333;
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 10px 10px 0px #FFAA00;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
     }
-    
-    /* 對話框卡片 */
     .dialogue-card {
         background: white;
         border: 4px solid #333;
@@ -25,7 +21,6 @@ st.markdown("""
         padding: 20px;
         box-shadow: 5px 5px 0px #333;
     }
-    
     .char-label {
         background: #333;
         color: #FFD700;
@@ -35,15 +30,12 @@ st.markdown("""
         display: inline-block;
         margin-bottom: 10px;
     }
-    
     .dialogue-text {
         font-size: 22px;
         font-weight: bold;
         color: #333;
         line-height: 1.5;
     }
-    
-    /* 華麗動漫按鈕 */
     .stButton>button {
         width: 100%;
         background-color: white !important;
@@ -64,13 +56,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 初始化數據 (加分制)
+# 3. 初始化狀態
 if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scores' not in st.session_state:
     st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
 
-# 4. 場景與圖片資料
+# 4. 題目資料 (請確保 image_0 到 4 已經上傳到 GitHub)
 questions = [
     {
         "icon": "🎒", "place": "校園出口", "img": "image_0.png",
@@ -116,23 +108,18 @@ if st.session_state.step < len(questions):
         try:
             st.image(q["img"], use_container_width=True)
         except:
-            st.warning(f"請確保 GitHub 根目錄已上傳圖片: {q['img']}")
+            st.warning(f"請上傳圖片至 GitHub: {q['img']}")
         st.markdown('</div>', unsafe_allow_html=True)
         
     with col2:
-        # 使用組合式字串避免引號偵測錯誤
-        title_html = f"<div class='char-label'>📍 {q['place']}</div>"
-        story_html = f"<p style='color: #666; font-style: italic;'>{q['story']}</p>"
-        dialogue_html = f"<div class='dialogue-text'>小明：「{q['say']}」</div>"
-        
         st.markdown("<div class='dialogue-card'>", unsafe_allow_html=True)
-        st.markdown(title_html, unsafe_allow_html=True)
-        st.markdown(story_html, unsafe_allow_html=True)
+        st.markdown(f"<div class='char-label'>📍 {q['place']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<p style='color: #666; font-style: italic;'>{q['story']}</p>", unsafe_allow_html=True)
         st.markdown("<hr>", unsafe_allow_html=True)
-        st.markdown(dialogue_html, unsafe_allow_html=True)
+        st.markdown(f"<div class='dialogue-text'>小明：「{q['say']}」</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
         
-        st.write("") # 留白
+        st.write("") 
         
         for btn_text, code in q['opts']:
             if st.button(btn_text, key=f"q_{st.session_state.step}_{code}"):
@@ -141,9 +128,16 @@ if st.session_state.step < len(questions):
                 st.rerun()
 
 else:
-    # 6. 結果顯示
+    # 6. 結果顯示 (修復 SyntaxError 關鍵區)
     st.balloons()
     final_type = max(st.session_state.scores, key=st.session_state.scores.get)
     
-    results = {
-        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "
+    # 將資料放在最安全的地方
+    res_title = ""
+    res_desc = ""
+    
+    if final_type == "A":
+        res_title = "🍋 偏好「酸」味 —— 肝氣偏盛型"
+        res_desc = "你在生活中追求效率、做事乾脆，但也可能代表你目前比較緊繃。"
+    elif final_type == "B":
+        res_title = "☕ 偏好「苦」味 ——
