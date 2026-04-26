@@ -91,7 +91,7 @@ questions = [
     {
         "icon": "🎬", "place": "深夜沙發", "img": "image_4.png",
         "story": "半夜兩點，劇集正播到高潮，小明的肚子卻大聲抗議。",
-        "say": "「可惡...不來點零食，我沒法專心看大結局啊！」",
+        "say": "「可惡...不來點靈魂零食，我沒法專心看大結局啊！」",
         "opts": [("A. 瞇眼超級酸蜜餞", "A"), ("B. 濃郁厚抹茶苦飲", "B"), ("C. 軟Q牛奶大糖球", "C"), ("D. 嗆鼻哇沙米脆餅", "D"), ("E. 厚切煙燻牛肉乾", "E")]
     }
 ]
@@ -101,28 +101,26 @@ if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的日常探險</h1>", unsafe_allow_html=True)
     
+    # 關鍵修正：補上分欄比例參數
     col1, col2 = st.columns()
     
     with col1:
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
-        # 顯示圖片，若圖片尚未上傳則會顯示檔名占位
         try:
             st.image(q["img"], use_container_width=True)
         except:
-            st.warning(f"請上傳圖片檔案: {q['img']}")
+            st.warning(f"請確保 GitHub 有上傳圖片檔案: {q['img']}")
         st.markdown('</div>', unsafe_allow_html=True)
         
     with col2:
-        # 使用更穩定的格式化字串
-        html_content = f"""
+        st.markdown(f"""
         <div class="dialogue-card">
             <div class="char-label">📍 {q['place']}</div>
             <p style='color: #666; font-style: italic;'>{q['story']}</p>
             <hr>
             <div class="dialogue-text">小明：「{q['say']}」</div>
         </div>
-        """
-        st.markdown(html_content, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
         st.write("") 
         for btn_text, code in q['opts']:
             if st.button(btn_text, key=f"q_{st.session_state.step}_{code}"):
@@ -136,24 +134,15 @@ else:
     final_type = max(st.session_state.scores, key=st.session_state.scores.get)
     
     results = {
-        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "在生活中，你是個精明且追求效率的人，做事乾脆俐落，但也可能代表你目前的狀態比較緊繃。"},
-        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "這代表你擁有超越同齡人的成熟感，在朋友圈中是個可靠的守護者。"},
-        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求甜蜜與穩定。性格溫和、熱愛和平，但有時會因為太愛安逸而忘了前進。"},
-        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡熱情奔放的挑戰！直來直往、最有正義感。"},
-        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "行事踏實、注重細節，是腳踏實地的實踐家。"}
+        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "你在生活中追求效率、做事乾脆，但也可能代表你目前的狀態比較緊繃，需要適度放鬆。"},
+        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "這代表你擁有成熟的心智，是朋友圈中可靠的守護者，默默承擔責任。"},
+        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求穩定與甜蜜感。性格溫和、熱愛和平，但有時會太愛安逸而忘了前進。"},
+        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡挑戰！生活中直來直往、最有正義感，是行動派代表，但要注意耗損元氣。"},
+        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "行事踏實、注重細節，是腳踏實地的實踐家，要注意適時釋放壓力。"}
     }
     res = results[final_type]
     
     col_a, col_b, col_c = st.columns()
     with col_b:
         st.markdown(f"""
-        <div style="background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;">
-            <h2 style='color: #FF8800;'>{res['title']}</h2>
-            <hr>
-            <p style='font-size: 20px;'><b>【生活樣貌】</b><br>{res['desc']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("再陪小明冒險一次"):
-            st.session_state.step = 0
-            st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
-            st.rerun()
+        <div style="background: white;
