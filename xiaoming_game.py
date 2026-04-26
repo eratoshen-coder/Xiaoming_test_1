@@ -1,6 +1,6 @@
 import streamlit as st
 
-# 1. 頁面設定 (Wide 模式讓大圖更好看)
+# 1. 頁面設定
 st.set_page_config(page_title="小明的五味靈魂探險", page_icon="🍱", layout="wide")
 
 # 2. 注入動漫風格 CSS
@@ -62,7 +62,7 @@ if 'step' not in st.session_state:
 if 'scores' not in st.session_state:
     st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
 
-# 4. 題目資料 (請確保 image_0 到 4 已經上傳到 GitHub)
+# 4. 題目資料
 questions = [
     {
         "icon": "🎒", "place": "校園出口", "img": "image_0.png",
@@ -128,16 +128,39 @@ if st.session_state.step < len(questions):
                 st.rerun()
 
 else:
-    # 6. 結果顯示 (修復 SyntaxError 關鍵區)
+    # 6. 結果顯示
     st.balloons()
     final_type = max(st.session_state.scores, key=st.session_state.scores.get)
     
-    # 將資料放在最安全的地方
     res_title = ""
     res_desc = ""
     
+    # 移除所有可能導致報錯的符號
     if final_type == "A":
-        res_title = "🍋 偏好「酸」味 —— 肝氣偏盛型"
-        res_desc = "你在生活中追求效率、做事乾脆，但也可能代表你目前比較緊繃。"
+        res_title = "偏好酸味 - 肝氣偏盛型"
+        res_desc = "你在生活中追求效率、做事乾脆，但也可能代表你目前的狀態比較緊繃。"
     elif final_type == "B":
-        res_title = "☕ 偏好「苦」味 ——
+        res_title = "偏好苦味 - 心氣偏盛型"
+        res_desc = "這代表你擁有成熟感，是朋友圈中可靠的守護者，默默承擔責任。"
+    elif final_type == "C":
+        res_title = "偏好甘味 - 脾氣偏盛型"
+        res_desc = "你追求穩定與甜蜜。性格溫和熱愛和平，但有時會太愛安逸。"
+    elif final_type == "D":
+        res_title = "偏好辛味 - 肺氣偏盛型"
+        res_desc = "你熱愛挑戰！直來直往有正義感，是行動派代表，要注意耗損元氣。"
+    else:
+        res_title = "偏好鹹味 - 腎氣偏盛型"
+        res_desc = "行事踏實注重細節，是腳踏實地的實踐家，要注意放鬆壓力。"
+
+    col_a, col_b, col_c = st.columns()
+    with col_b:
+        st.markdown("<div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'>", unsafe_allow_html=True)
+        st.write(f"## {res_title}")
+        st.write("---")
+        st.write(f"**生活樣貌**")
+        st.write(res_desc)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        if st.button("再陪小明冒險一次"):
+            st.session_state.step = 0
+            st.session_state.scores = {"A": 0, "B": 0, "
