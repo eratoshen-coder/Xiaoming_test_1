@@ -1,14 +1,13 @@
 import streamlit as st
-from collections import Counter
 
-# 1. 頁面基本設定
-st.set_page_config(page_title="小明的五味靈魂探險", page_icon="🍱", layout="centered")
+# 1. 頁面設定
+st.set_page_config(page_title="小明的五味冒險", page_icon="🍱", layout="centered")
 
-# 2. 注入華麗卡通風格 CSS (模擬動漫對話框)
+# 2. 注入華麗卡通風格 CSS
 st.markdown("""
 <style>
     .stApp { background-color: #FDFCF0; }
-    /* 卡通場景卡片 */
+    /* 華麗卡通場景卡片 */
     .scene-card {
         background: white; border: 4px solid #333; border-radius: 25px;
         padding: 25px; box-shadow: 10px 10px 0px #FFAA00; margin-bottom: 25px;
@@ -19,8 +18,9 @@ st.markdown("""
         border-radius: 50px; font-weight: 900; display: inline-block;
         margin-bottom: 15px; border: 2px solid #333;
     }
-    /* 對話文字 */
+    /* 對話文字氣泡感 */
     .dialogue { font-size: 22px; font-weight: 700; color: #333; line-height: 1.6; }
+    
     /* 華麗動漫風按鈕 */
     .stButton>button {
         width: 100%; background-color: #FFFFFF; color: #FF8800 !important;
@@ -40,29 +40,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 初始化遊戲數據 (修正：確保數據型態正確)
+# 3. 初始化數據 (使用簡單加分制，避免 list 報錯)
 if 'step' not in st.session_state:
     st.session_state.step = 0
-if 'ans_list' not in st.session_state:
-    st.session_state.ans_list = []
+if 'scores' not in st.session_state:
+    st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
 
-# 4. 華麗場景資料庫
+# 4. 華麗場景資料
 questions = [
     {
         "icon": "🎒", "place": "校園門口", 
-        "story": "期中考考完啦！小明帥氣地走出校門，陽光灑在他的背影上。",
-        "say": "「呼...大腦已經乾枯了。走吧！現在必須吃點重口味的來重新啟動靈魂！」",
+        "story": "期中考終於結束了！小明帥氣地走出校門，感覺大腦已經乾枯...",
+        "say": "「呼...腦袋徹底當機！現在我需要超重口味的食物來重啟靈魂，走吧！」",
         "opts": [("A. 泰式酸辣粉 (酸爽帶勁)", "A"), ("B. 苦甜黑巧舒芙蕾 (大人苦味)", "B"), ("C. 蜂蜜奶油厚鬆餅 (甜蜜爆發)", "C"), ("D. 地獄麻辣大火鍋 (辛辣發散)", "D"), ("E. 雙倍濃鹽濃湯拉麵 (鹹鮮入味)", "E")]
     },
     {
         "icon": "🏮", "place": "東京・巷弄食堂", 
-        "story": "小明牽著女朋友的手，在新宿的巷弄發現一家掛著黃色燈籠的神祕老店。",
+        "story": "小明牽著女朋友的手，在新宿發現一家掛著黃色燈籠的神祕老店。",
         "say": "「親愛的，這家店的味道聞起來好專業！我們點這個招牌試試看？」",
         "opts": [("A. 極致醃漬青梅", "A"), ("B. 炭火焦香銀杏", "B"), ("C. 甜醬嫩燉和牛", "C"), ("D. 哇沙米激辣串燒", "D"), ("E. 熟成醬油醃魚卵", "E")]
     },
     {
         "icon": "🏠", "place": "溫馨老家廚房", 
-        "story": "推開家門，鍋鏟與鐵鍋的敲擊聲傳來，是媽媽正在揮汗準備大餐。",
+        "story": "推開門，鍋鏟與鐵鍋的敲擊聲傳來，是媽媽正在準備大餐。",
         "say": "「好香啊！媽，今天該不會是準備了我最愛的那一道吧？」",
         "opts": [("A. 秘製祖傳糖醋肉", "A"), ("B. 降火微苦排骨湯", "B"), ("C. 補氣山藥地瓜甜湯", "C"), ("D. 辛香爆蔥快炒肉", "D"), ("E. 鹹鮮入味紅燒肉", "E")]
     },
@@ -74,13 +74,13 @@ questions = [
     },
     {
         "icon": "🎬", "place": "深夜沙發", 
-        "story": "半夜兩點，劇集正播到高潮，小明的肚子卻不爭氣地咕嚕咕嚕大聲抗議。",
-        "say": "「可惡...不來點零魂零食，我真的會餓到沒法專心看大結局！」",
+        "story": "半夜兩點，劇集正播到高潮，小明的肚子卻大聲抗議。",
+        "say": "「可惡...不來點靈魂零食，我真的會餓到沒法專心看大結局！」",
         "opts": [("A. 瞇眼超級酸蜜餞", "A"), ("B. 濃郁厚抹茶苦飲", "B"), ("C. 軟Q牛奶大糖球", "C"), ("D. 嗆鼻哇沙米脆餅", "D"), ("E. 厚切煙燻牛肉乾", "E")]
     }
 ]
 
-# 5. 遊戲介面渲染
+# 5. 介面渲染
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的冒險</h1>", unsafe_allow_html=True)
@@ -96,50 +96,40 @@ if st.session_state.step < len(questions):
     """, unsafe_allow_html=True)
     
     for btn_text, code in q['opts']:
-        if st.button(btn_text, key=f"q{st.session_state.step}_{code}"):
-            st.session_state.ans_list.append(str(code)) # 強制轉為字串
+        if st.button(btn_text, key=f"btn_{st.session_state.step}_{code}"):
+            st.session_state.scores[code] += 1
             st.session_state.step += 1
             st.rerun()
 
 else:
-    # 6. 結果計算與顯示 (完全修復 TypeError 版本)
+    # 6. 結果計算 (使用加分制，絕對不會有 list 報錯)
     st.balloons()
-    st.markdown("<h1 style='text-align: center; color: #FF8800;'>🔮 探險終點：你的靈魂味覺</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #FF8800;'>🔮 探險終點</h1>", unsafe_allow_html=True)
     
-    # 邏輯保護：確保 ans_list 是純字串列表
-    final_list = [str(x) for x in st.session_state.ans_list]
-    
-    if final_list:
-        counts = Counter(final_list)
-        # most_common(1) 回傳的是 [('A', 3)] 這樣的列表，我們取第一個元素的第 0 個索引
-        winner = counts.most_common(1)
-    else:
-        winner = "C"
+    # 找出最高分的字母
+    final_type = max(st.session_state.scores, key=st.session_state.scores.get)
 
-    # 結果資料庫
     results_map = {
-        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "在小明的冒險中，你總是選擇清爽收斂。在生活中，你是個精明且追求效率的人，做事乾脆俐落，但也可能代表你目前的狀態比較緊繃。"},
-        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "你選擇了沉穩的苦味。這代表你擁有超越同齡人的成熟感，在朋友圈中是個可靠的守護者，默默承擔著責任。"},
-        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求甜蜜與穩定。在生活中，你性格溫和、熱愛和平，是大家眼中的開心果，但有時會因為太愛安逸而忘了前進。"},
-        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡熱情奔放的挑戰！生活中你直來直往、非常有正義感，是行動派的代表，但也容易因為衝動而耗損元氣。"},
-        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "你偏好厚實且紮實的層次感。生活中你行事踏實、注重細節，是腳踏實地的實踐家，但要注意適時放鬆。"}
+        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "在生活中，你是個精明且追求效率的人，做事乾脆俐落，但也可能代表你目前的狀態比較緊繃。"},
+        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "這代表你擁有超越同齡人的成熟感，在朋友圈中是個可靠的守護者，默默承擔著責任。"},
+        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求甜蜜與穩定。性格溫和、熱愛和平，是大家眼中的開心果，但有時會因為太愛安逸而忘了前進。"},
+        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡熱情奔放的挑戰！直來直往、非常有正義感，是行動派代表，但也容易耗損元氣。"},
+        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "你行事踏實、注重細節，是腳踏實地的實踐家，但要注意適時放鬆壓力。"}
     }
     
-    # 最終獲取對象
-    res = results_map[str(winner)]
+    res = results_map[final_type]
     
     st.markdown(f"""
     <div class="result-box">
         <h2 style='color: #FF8800;'>{res['title']}</h2>
         <hr style="border: 2px solid #FF8800;">
-        <p style='font-size: 22px; line-height: 1.8; color: #333;'>
-            <span style="background-color: #FFD700; padding: 2px 10px; border-radius: 5px; font-weight: bold;">生活樣貌</span><br><br>
-            {res['desc']}
+        <p style='font-size: 20px; line-height: 1.8; color: #333;'>
+            <b>【生活樣貌】</b><br>{res['desc']}
         </p>
     </div>
     """, unsafe_allow_html=True)
     
     if st.button("再陪小明冒險一次"):
         st.session_state.step = 0
-        st.session_state.ans_list = []
+        st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
         st.rerun()
