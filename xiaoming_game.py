@@ -1,14 +1,12 @@
 import streamlit as st
 
-# 1. 頁面設定 (使用 wide 模式讓圖片有空間)
+# 1. 頁面設定
 st.set_page_config(page_title="小明的五味靈魂探險", page_icon="🍱", layout="wide")
 
 # 2. 注入華麗動漫風格 CSS
 st.markdown("""
 <style>
     .stApp { background-color: #FDFCF0; }
-    
-    /* 圖片外框 */
     .img-container {
         border: 4px solid #333;
         border-radius: 20px;
@@ -16,8 +14,6 @@ st.markdown("""
         box-shadow: 10px 10px 0px #FFAA00;
         margin-bottom: 20px;
     }
-    
-    /* 對話框卡片 */
     .dialogue-card {
         background: white;
         border: 4px solid #333;
@@ -25,7 +21,6 @@ st.markdown("""
         padding: 20px;
         box-shadow: 5px 5px 0px #333;
     }
-    
     .char-label {
         background: #333;
         color: #FFD700;
@@ -35,15 +30,12 @@ st.markdown("""
         display: inline-block;
         margin-bottom: 10px;
     }
-    
     .dialogue-text {
         font-size: 22px;
         font-weight: bold;
         color: #333;
         line-height: 1.5;
     }
-    
-    /* 按鈕樣式 */
     .stButton>button {
         width: 100%;
         background-color: white;
@@ -64,7 +56,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 初始化數據 (加分制最穩定)
+# 3. 初始化數據
 if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scores' not in st.session_state:
@@ -94,7 +86,7 @@ questions = [
         "icon": "🎉", "place": "KTV 派對", "img": "image_3.png",
         "story": "霓虹燈閃爍，朋友們都在起鬨，輪到小明決定慶生蛋糕。",
         "say": "「既然是慶祝，口味絕對要挑最令人難忘的那種！」",
-        "opts": [("A. 爆漿檸檬塔", "A"), ("B. 炭焙苦咖啡蛋糕", "B"), ("C. 傳統古法大布丁", "C"), ("D. 肉桂生薑香料糕", "D"), ("E. 海鹽焦糖起司糕", "E")]
+        "opts": [("A. 爆漿檸檬塔", "A"), ("B. 炭焙苦咖啡蛋糕", "B"), ("C. 傳統古法大布丁", "C"), ("D. 肉桂生薑香料糕", "D"), ("E. 海鹽焦糖起司蛋糕", "E")]
     },
     {
         "icon": "🎬", "place": "深夜沙發", "img": "image_4.png",
@@ -104,20 +96,64 @@ questions = [
     }
 ]
 
-# 5. 遊戲畫面
+# 5. 遊戲介面
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的日常探險</h1>", unsafe_allow_html=True)
     
-    # 修正：傳入正確比例參數
     col1, col2 = st.columns()
     
     with col1:
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
-        st.image(q["img"], use_container_width=True)
+        # 顯示圖片，若圖片尚未上傳則會顯示檔名占位
+        try:
+            st.image(q["img"], use_container_width=True)
+        except:
+            st.warning(f"請上傳圖片檔案: {q['img']}")
         st.markdown('</div>', unsafe_allow_html=True)
         
     with col2:
-        st.markdown(f"""
+        # 使用更穩定的格式化字串
+        html_content = f"""
         <div class="dialogue-card">
-            <div class="char-label">📍 {q['
+            <div class="char-label">📍 {q['place']}</div>
+            <p style='color: #666; font-style: italic;'>{q['story']}</p>
+            <hr>
+            <div class="dialogue-text">小明：「{q['say']}」</div>
+        </div>
+        """
+        st.markdown(html_content, unsafe_allow_html=True)
+        st.write("") 
+        for btn_text, code in q['opts']:
+            if st.button(btn_text, key=f"q_{st.session_state.step}_{code}"):
+                st.session_state.scores[code] += 1
+                st.session_state.step += 1
+                st.rerun()
+
+else:
+    # 6. 結果顯示
+    st.balloons()
+    final_type = max(st.session_state.scores, key=st.session_state.scores.get)
+    
+    results = {
+        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "在生活中，你是個精明且追求效率的人，做事乾脆俐落，但也可能代表你目前的狀態比較緊繃。"},
+        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "這代表你擁有超越同齡人的成熟感，在朋友圈中是個可靠的守護者。"},
+        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求甜蜜與穩定。性格溫和、熱愛和平，但有時會因為太愛安逸而忘了前進。"},
+        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡熱情奔放的挑戰！直來直往、最有正義感。"},
+        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "行事踏實、注重細節，是腳踏實地的實踐家。"}
+    }
+    res = results[final_type]
+    
+    col_a, col_b, col_c = st.columns()
+    with col_b:
+        st.markdown(f"""
+        <div style="background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;">
+            <h2 style='color: #FF8800;'>{res['title']}</h2>
+            <hr>
+            <p style='font-size: 20px;'><b>【生活樣貌】</b><br>{res['desc']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("再陪小明冒險一次"):
+            st.session_state.step = 0
+            st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
+            st.rerun()
