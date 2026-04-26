@@ -1,19 +1,23 @@
 import streamlit as st
 
-# 1. 頁面設定
+# 1. 頁面設定 (使用 wide 模式讓圖片有發揮空間)
 st.set_page_config(page_title="小明的五味靈魂探險", page_icon="🍱", layout="wide")
 
 # 2. 注入華麗動漫風格 CSS
 st.markdown("""
 <style>
     .stApp { background-color: #FDFCF0; }
+    
+    /* 圖片外框：日系手繪感 */
     .img-container {
         border: 4px solid #333;
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 10px 10px 0px #FFAA00;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
+    
+    /* 對話框卡片 */
     .dialogue-card {
         background: white;
         border: 4px solid #333;
@@ -21,6 +25,7 @@ st.markdown("""
         padding: 20px;
         box-shadow: 5px 5px 0px #333;
     }
+    
     .char-label {
         background: #333;
         color: #FFD700;
@@ -30,15 +35,18 @@ st.markdown("""
         display: inline-block;
         margin-bottom: 10px;
     }
+    
     .dialogue-text {
         font-size: 22px;
         font-weight: bold;
         color: #333;
         line-height: 1.5;
     }
+    
+    /* 華麗動漫按鈕 */
     .stButton>button {
         width: 100%;
-        background-color: white;
+        background-color: white !important;
         color: #FF8800 !important;
         border: 3px solid #FF8800 !important;
         border-radius: 15px !important;
@@ -56,13 +64,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 初始化數據
+# 3. 初始化數據 (加分制)
 if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scores' not in st.session_state:
     st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
 
-# 4. 場景資料庫
+# 4. 場景與圖片資料
 questions = [
     {
         "icon": "🎒", "place": "校園出口", "img": "image_0.png",
@@ -96,12 +104,11 @@ questions = [
     }
 ]
 
-# 5. 遊戲介面
+# 5. 遊戲主畫面
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的日常探險</h1>", unsafe_allow_html=True)
     
-    # 關鍵修正：補上分欄比例參數
     col1, col2 = st.columns()
     
     with col1:
@@ -109,19 +116,24 @@ if st.session_state.step < len(questions):
         try:
             st.image(q["img"], use_container_width=True)
         except:
-            st.warning(f"請確保 GitHub 有上傳圖片檔案: {q['img']}")
+            st.warning(f"請確保 GitHub 根目錄已上傳圖片: {q['img']}")
         st.markdown('</div>', unsafe_allow_html=True)
         
     with col2:
-        st.markdown(f"""
-        <div class="dialogue-card">
-            <div class="char-label">📍 {q['place']}</div>
-            <p style='color: #666; font-style: italic;'>{q['story']}</p>
-            <hr>
-            <div class="dialogue-text">小明：「{q['say']}」</div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.write("") 
+        # 使用組合式字串避免引號偵測錯誤
+        title_html = f"<div class='char-label'>📍 {q['place']}</div>"
+        story_html = f"<p style='color: #666; font-style: italic;'>{q['story']}</p>"
+        dialogue_html = f"<div class='dialogue-text'>小明：「{q['say']}」</div>"
+        
+        st.markdown("<div class='dialogue-card'>", unsafe_allow_html=True)
+        st.markdown(title_html, unsafe_allow_html=True)
+        st.markdown(story_html, unsafe_allow_html=True)
+        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown(dialogue_html, unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.write("") # 留白
+        
         for btn_text, code in q['opts']:
             if st.button(btn_text, key=f"q_{st.session_state.step}_{code}"):
                 st.session_state.scores[code] += 1
@@ -134,15 +146,4 @@ else:
     final_type = max(st.session_state.scores, key=st.session_state.scores.get)
     
     results = {
-        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "你在生活中追求效率、做事乾脆，但也可能代表你目前的狀態比較緊繃，需要適度放鬆。"},
-        "B": {"title": "☕ 偏好「苦」味 —— 心氣偏盛型", "desc": "這代表你擁有成熟的心智，是朋友圈中可靠的守護者，默默承擔責任。"},
-        "C": {"title": "🍯 偏好「甘」味 —— 脾氣偏盛型", "desc": "你追求穩定與甜蜜感。性格溫和、熱愛和平，但有時會太愛安逸而忘了前進。"},
-        "D": {"title": "🌶️ 偏好「辛」味 —— 肺氣偏盛型", "desc": "你喜歡挑戰！生活中直來直往、最有正義感，是行動派代表，但要注意耗損元氣。"},
-        "E": {"title": "🧂 偏好「鹹」味 —— 腎氣偏盛型", "desc": "行事踏實、注重細節，是腳踏實地的實踐家，要注意適時釋放壓力。"}
-    }
-    res = results[final_type]
-    
-    col_a, col_b, col_c = st.columns()
-    with col_b:
-        st.markdown(f"""
-        <div style="background: white;
+        "A": {"title": "🍋 偏好「酸」味 —— 肝氣偏盛型", "desc": "
