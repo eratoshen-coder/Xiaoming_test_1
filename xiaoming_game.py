@@ -1,22 +1,22 @@
 import streamlit as st
 
 # 1. 頁面設定
-st.set_page_config(page_title="小明的冒險", page_icon="🍱", layout="wide")
+st.set_page_config(page_title="小明的冒險", page_icon="🍱", layout="centered")
 
 # 2. 注入動漫風格 CSS
 st.markdown("""
 <style>
     .stApp { background-color: #FDFCF0; }
-    .img-container { border: 4px solid #333; border-radius: 20px; overflow: hidden; box-shadow: 10px 10px 0px #FFAA00; margin-bottom: 20px; }
-    .dialogue-card { background: white; border: 4px solid #333; border-radius: 20px; padding: 20px; box-shadow: 5px 5px 0px #333; }
-    .char-label { background: #333; color: #FFD700; padding: 5px 15px; border-radius: 10px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
-    .dialogue-text { font-size: 22px; font-weight: bold; color: #333; line-height: 1.5; }
-    .stButton>button { width: 100%; background-color: white !important; color: #FF8800 !important; border: 3px solid #FF8800 !important; border-radius: 15px !important; padding: 15px !important; font-size: 18px !important; font-weight: bold !important; box-shadow: 0 4px 0 #FF8800 !important; }
+    .img-box { border: 4px solid #333; border-radius: 20px; overflow: hidden; box-shadow: 10px 10px 0px #FFAA00; margin-bottom: 20px; }
+    .dialogue-card { background: white; border: 4px solid #333; border-radius: 20px; padding: 25px; box-shadow: 5px 5px 0px #333; }
+    .char-label { background: #333; color: #FFD700; padding: 5px 20px; border-radius: 50px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+    .dialogue-text { font-size: 22px; font-weight: bold; color: #333; line-height: 1.6; }
+    .stButton>button { width: 100%; background-color: white !important; color: #FF8800 !important; border: 3px solid #FF8800 !important; border-radius: 15px !important; padding: 15px !important; font-size: 20px !important; font-weight: bold !important; box-shadow: 0 4px 0 #FF8800 !important; margin-bottom: 10px; }
     .stButton>button:hover { background-color: #FF8800 !important; color: white !important; transform: translateY(2px); box-shadow: 0 1px 0 #FF8800 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 初始化狀態
+# 3. 初始化數據
 if 'step' not in st.session_state:
     st.session_state.step = 0
 if 'scores' not in st.session_state:
@@ -34,41 +34,50 @@ questions = [
 # 5. 遊戲主畫面
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
-    st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的日常探險</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的探險</h1>", unsafe_allow_html=True)
     
-    # 這裡修正了：加上了 參數
-    col1, col2 = st.columns()
+    # 改為上下排列，完全不使用 st.columns 以確保穩定性
+    st.markdown('<div class="img-box">', unsafe_allow_html=True)
+    try:
+        st.image(q["img"], use_container_width=True)
+    except:
+        st.warning(f"請確認 GitHub 已上傳圖片: {q['img']}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class='dialogue-card'>
+        <div class='char-label'>📍 {q['place']}</div>
+        <p style='color: #666;'>{q['story']}</p>
+        <hr>
+        <div class='dialogue-text'>小明：「{q['say']}」</div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    with col1:
-        st.markdown('<div class="img-container">', unsafe_allow_html=True)
-        try:
-            st.image(q["img"], use_container_width=True)
-        except:
-            st.warning("請確認圖片已上傳至 GitHub")
-        st.markdown('</div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"<div class='dialogue-card'><div class='char-label'>📍 {q['place']}</div><p style='color: #666;'>{q['story']}</p><hr><div class='dialogue-text'>小明：「{q['say']}」</div></div>", unsafe_allow_html=True)
-        st.write("") 
-        for btn_text, code in q['opts']:
-            if st.button(btn_text, key=f"q_{st.session_state.step}_{code}"):
-                st.session_state.scores[code] += 1
-                st.session_state.step += 1
-                st.rerun()
+    st.write("---")
+    for btn_text, code in q['opts']:
+        if st.button(btn_text, key=f"q_{st.session_state.step}_{code}"):
+            st.session_state.scores[code] += 1
+            st.session_state.step += 1
+            st.rerun()
 else:
     # 6. 結果顯示
     st.balloons()
     final_type = max(st.session_state.scores, key=st.session_state.scores.get)
     res_map = {
-        "A": "肝氣偏盛型：你在生活中追求效率、做事乾脆，但也可能代表你目前比較緊繃。",
-        "B": "心氣偏盛型：這代表你擁有成熟感，是朋友圈中可靠的守護者。",
-        "C": "脾氣偏盛型：你追求穩定與甜蜜。性格溫和熱愛和平，但有時會太愛安逸。",
-        "D": "肺氣偏盛型：你熱愛挑戰！直來直往有正義感，是行動派代表。",
+        "A": "肝氣偏盛型：追求效率、做事乾脆，但也可能代表你目前比較緊繃。",
+        "B": "心氣偏盛型：擁有成熟感，是朋友圈中可靠的守護者。",
+        "C": "脾氣偏盛型：追求穩定與甜蜜。性格溫和熱愛和平。",
+        "D": "肺氣偏盛型：熱愛挑戰！直來直往有正義感，是行動派代表。",
         "E": "腎氣偏盛型：行事踏實注重細節，是腳踏實地的實踐家。"
     }
-    st.markdown("<div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'>", unsafe_allow_html=True)
-    st.write(f"## 測驗結果")
-    st.write(f"### {res_map[final_type]}")
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'>
+        <h2 style='color: #FF8800;'>測驗結果</h2>
+        <hr>
+        <p style='font-size: 22px; font-weight: bold;'>{res_map[final_type]}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     if st.button("再陪小明冒險一次"):
         st.session_state.step = 0
         st.session_state.scores = {"A": 0, "B": 0, "C": 0, "D": 0, "E": 0}
