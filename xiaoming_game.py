@@ -35,13 +35,16 @@ questions = [
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
     st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的日常探險</h1>", unsafe_allow_html=True)
+    
+    # 這裡修正了：加上了 參數
     col1, col2 = st.columns()
+    
     with col1:
         st.markdown('<div class="img-container">', unsafe_allow_html=True)
         try:
             st.image(q["img"], use_container_width=True)
         except:
-            st.warning("請確保圖片已上傳至 GitHub")
+            st.warning("請確認圖片已上傳至 GitHub")
         st.markdown('</div>', unsafe_allow_html=True)
     with col2:
         st.markdown(f"<div class='dialogue-card'><div class='char-label'>📍 {q['place']}</div><p style='color: #666;'>{q['story']}</p><hr><div class='dialogue-text'>小明：「{q['say']}」</div></div>", unsafe_allow_html=True)
@@ -52,7 +55,7 @@ if st.session_state.step < len(questions):
                 st.session_state.step += 1
                 st.rerun()
 else:
-    # 6. 結果顯示 (極簡版，防止引號錯誤)
+    # 6. 結果顯示
     st.balloons()
     final_type = max(st.session_state.scores, key=st.session_state.scores.get)
     res_map = {
