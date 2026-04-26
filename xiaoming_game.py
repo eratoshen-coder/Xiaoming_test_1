@@ -1,7 +1,7 @@
 import streamlit as st
 
 # 1. 頁面設定
-st.set_page_config(page_title="小明的冒險", page_icon="🍱", layout="centered")
+st.set_page_config(page_title="小明的五味冒險", page_icon="🍱", layout="centered")
 
 # 2. 注入動漫風格 CSS
 st.markdown("""
@@ -34,9 +34,9 @@ questions = [
 # 5. 遊戲主畫面
 if st.session_state.step < len(questions):
     q = questions[st.session_state.step]
-    st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的探險</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center; color: #FF8800;'>{q['icon']} 小明的冒險</h1>", unsafe_allow_html=True)
     
-    # 改為上下排列，完全不使用 st.columns 以確保穩定性
+    # 圖片區
     st.markdown('<div class="img-box">', unsafe_allow_html=True)
     try:
         st.image(q["img"], use_container_width=True)
@@ -44,14 +44,8 @@ if st.session_state.step < len(questions):
         st.warning(f"請確認 GitHub 已上傳圖片: {q['img']}")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class='dialogue-card'>
-        <div class='char-label'>📍 {q['place']}</div>
-        <p style='color: #666;'>{q['story']}</p>
-        <hr>
-        <div class='dialogue-text'>小明：「{q['say']}」</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # 對話區
+    st.markdown(f"<div class='dialogue-card'><div class='char-label'>📍 {q['place']}</div><p style='color: #666;'>{q['story']}</p><hr><div class='dialogue-text'>小明：「{q['say']}」</div></div>", unsafe_allow_html=True)
     
     st.write("---")
     for btn_text, code in q['opts']:
@@ -70,13 +64,7 @@ else:
         "D": "肺氣偏盛型：熱愛挑戰！直來直往有正義感，是行動派代表。",
         "E": "腎氣偏盛型：行事踏實注重細節，是腳踏實地的實踐家。"
     }
-    st.markdown(f"""
-    <div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'>
-        <h2 style='color: #FF8800;'>測驗結果</h2>
-        <hr>
-        <p style='font-size: 22px; font-weight: bold;'>{res_map[final_type]}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"<div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'><h2 style='color: #FF8800;'>測驗結果</h2><hr><p style='font-size: 22px; font-weight: bold;'>{res_map[final_type]}</p></div>", unsafe_allow_html=True)
     
     if st.button("再陪小明冒險一次"):
         st.session_state.step = 0
