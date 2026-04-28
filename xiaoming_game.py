@@ -64,13 +64,7 @@ else:
         "D": "肺氣偏盛型：熱愛挑戰！直來直往有正義感，是行動派代表。",
         "E": "腎氣偏盛型：行事踏實注重細節，是腳踏實地的實踐家。"
     }
-    # 統一的結果顯示方式
-st.markdown(f"""
-    <div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'>
-        <h2 style='color: #FF8800;'>測驗結果：{res_title}</h2>
-        <hr style='border: 1px solid #eee;'>
-        <p style='font-size: 20px; color: #333;'>
-            <b>【生活樣貌】</b><br>{res_desc}
+st.markdown(f"<div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'><h2 style='color: #FF8800;'>測驗結果</h2><hr><p style='font-size: 22px; font-weight: bold;'>{res_map[final_type]}</p></div>", unsafe_allow_html=True)
         </p>
     </div>
 """, unsafe_allow_html=True)
