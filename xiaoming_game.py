@@ -50,7 +50,7 @@ if st.session_state.step < len(questions):
 else:
     st.balloons()
     win = max(st.session_state.scores, key=st.session_state.scores.get)
-    res = {"A": "肝氣偏盛型：效率高、做事乾脆，選擇障礙者的好朋友。", "B": "心氣偏盛型：成熟、可靠守護者。團隊裡的開心果", "C": "脾氣偏盛型：穩重、性格溫和。有時喜歡想的多", "D": "肺氣偏盛型：少年維特的煩惱是你嗎?總喜歡談一段揪心的戀情?。", "E": "腎氣偏盛型：喜歡看恐怖片，去鬼屋探險少不了你。"}[win]
+    res = {"A": "肝氣偏盛型：效率高、做事乾脆，選擇障礙者的好朋友。", "B": "心氣偏盛型：成熟、可靠守護者。團隊裡的開心果", "C": "脾氣偏盛型：穩重、性格溫和。有時喜歡想的多", "D": "肺氣偏盛型：少年維特的煩惱是你嗎?總喜歡談一段揪心的戀情?", "E": "腎氣偏盛型：喜歡看恐怖片，去鬼屋探險少不了你。"}[win]
     st.markdown(f"<div style='background: white; border: 6px solid #FF8800; border-radius: 30px; padding: 40px; text-align: center;'><h2>測驗結果</h2><hr><h3>{res}</h3></div>", unsafe_allow_html=True)
     if st.button("再次測驗"):
         st.session_state.step = 0
